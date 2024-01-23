@@ -1,18 +1,32 @@
 import sys
-from bs4 import BeautifulSoup
-import requests
+from nsetools import Nse
+# from pprint import pprint
 
 arg1 = sys.argv[1]
 
+
 def get_stock_data(stock_sym):
 
-    url = f'https://www.google.com/finance/quote/{stock_sym}:NSE?hl=en'
-    response =requests.get(url)
-    soup =BeautifulSoup(response.text,"html.parser")
-    class1="YMlKec fxKbKc"
-    price =float(soup.find(class_=class1).text.strip()[1:].replace(",",""))
-    return price
+    nse = Nse()
+    response = nse.get_quote(stock_sym)
+    base_price = round(response['basePrice'], 2)
+    last_price = round(response['lastPrice'], 2)
+    previous_close = round(response['previousClose'], 2)
+    price_change = round(response['change'], 2)
+    percent_price_change = round(response['pChange'], 2)
+    if (last_price > base_price):
+        price_change = f"+{price_change}"
+        percent_price_change = f"+{percent_price_change}"
+    elif (last_price < base_price):
+        price_change = f"-{price_change}"
+        percent_price_change = f"-{percent_price_change}"
+    else:
+        pass
+
+    data = f"{base_price},{price_change},{percent_price_change},{last_price},{previous_close}"
+    return data
+
 
 if __name__ == "__main__":
-    price =get_stock_data(arg1)
+    price = get_stock_data(arg1)
     print(price)
